@@ -1,1 +1,134 @@
-$(document).ready(function(){$(window).scroll(function(){var scrollt=document.documentElement.scrollTop+document.body.scrollTop;if(scrollt>200){$("#gotop").fadeIn(400);if($(window).width()>=1200){$(".navbar").stop().fadeTo(400,0.2);}}else{$("#gotop").fadeOut(400);if($(window).width()>=1200){$(".navbar").stop().fadeTo(400,1);}}});$("#gotop").click(function(){$("html,body").animate({scrollTop:"0px"},200);});$(".navbar").mouseenter(function(){$(".navbar").fadeTo(100,1);});$(".navbar").mouseleave(function(){var scrollt=document.documentElement.scrollTop+document.body.scrollTop;if(scrollt>200){$(".navbar").fadeTo(100,0.2);}});replaceMeta();$(window).resize(function(){replaceMeta();});});replaceMeta=function(){if($(window).width()<980){if($("#side_meta #post_meta").length>0){$("#post_meta").appendTo("#top_meta");}if($("#sidebar #site_search").length>0){$("#site_search").appendTo("#top_search");$("#site_search #st-search-input").css("width","95%");}}else{if($("#top_meta #post_meta").length>0){$("#post_meta").appendTo("#side_meta");}if($("#top_search #site_search").length>0){$("#site_search").prependTo("#sidebar");$("#site_search #st-search-input").css("width","85%");}}};
+/*
+	Strata by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+*/
+
+(function($) {
+
+	var settings = {
+
+		// Parallax background effect?
+			parallax: true,
+
+		// Parallax factor (lower = more intense, higher = less intense).
+			parallaxFactor: 20
+
+	};
+
+	skel.breakpoints({
+		xlarge: '(max-width: 1800px)',
+		large: '(max-width: 1280px)',
+		medium: '(max-width: 980px)',
+		small: '(max-width: 736px)',
+		xsmall: '(max-width: 480px)'
+	});
+
+	$(function() {
+
+		var $window = $(window),
+			$body = $('body'),
+			$header = $('#header'),
+			$footer = $('#footer'),
+			$main = $('#main');
+
+		// Disable animations/transitions until the page has loaded.
+			$body.addClass('is-loading');
+
+			$window.on('load', function() {
+				$body.removeClass('is-loading');
+			});
+
+		// Touch?
+			if (skel.vars.mobile) {
+
+				// Turn on touch mode.
+					$body.addClass('is-touch');
+
+				// Height fix (mostly for iOS).
+					window.setTimeout(function() {
+						$window.scrollTop($window.scrollTop() + 1);
+					}, 0);
+
+			}
+
+		// Fix: Placeholder polyfill.
+			$('form').placeholder();
+
+		// Prioritize "important" elements on medium.
+			skel.on('+medium -medium', function() {
+				$.prioritize(
+					'.important\\28 medium\\29',
+					skel.breakpoint('medium').active
+				);
+			});
+
+		// Footer.
+			skel.on('+medium', function() {
+				$footer.insertAfter($main);
+			});
+
+			skel.on('-medium !medium', function() {
+				$footer.appendTo($header);
+			});
+
+		// Header.
+
+			// Parallax background.
+
+				// Disable parallax on IE (smooth scrolling is jerky), and on mobile platforms (= better performance).
+					if (skel.vars.browser == 'ie'
+					||	skel.vars.mobile)
+						settings.parallax = false;
+
+				if (settings.parallax) {
+
+					skel.on('change', function() {
+
+						if (skel.breakpoint('medium').active) {
+
+							$window.off('scroll.strata_parallax');
+							$header.css('background-position', 'top left, center center');
+
+						}
+						else {
+
+							$header.css('background-position', 'left 0px');
+
+							$window.on('scroll.strata_parallax', function() {
+								$header.css('background-position', 'left ' + (-1 * (parseInt($window.scrollTop()) / settings.parallaxFactor)) + 'px');
+							});
+
+						}
+
+					});
+
+					$window.on('load', function() {
+						$window.triggerHandler('scroll');
+					});
+
+				}
+
+		// Main Sections: Two.
+
+			// Lightbox gallery.
+				$window.on('load', function() {
+
+					$('#two').poptrox({
+						overlayColor: '#2c2c2c',
+						overlayOpacity: 0.85,
+						popupCloserText: '',
+						popupLoaderText: '',
+						selector: '.work-item a.image',
+						usePopupCaption: true,
+						usePopupDefaultStyling: false,
+						usePopupEasyClose: false,
+						usePopupNav: true,
+						windowMargin: (skel.breakpoint('small').active ? 0 : 50)
+					});
+
+				});
+
+	});
+
+})(jQuery);
