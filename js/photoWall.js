@@ -1,14 +1,150 @@
-var imageWidth,imgDataPath="/photos/galleryList.json",imgPath="/photos/images/",imgMaxNum=50,windowWidth=window.innerWidth||document.documentElement.clientWidth||document.body.clientWidth;imageWidth=windowWidth<768?145:250;const photo={page:1,offset:imgMaxNum,init:function(){var a=this;$.getJSON(imgDataPath,function(t){a.render(a.page,t),a.eventListen(t)})},constructHtml(t){var{imageWidth:t,imageX:a,imageY:i,imgPath:e,imgName:n,imgNameWithPattern:m}=t;return`<div class="card lozad" style="width:${t}px">
-                  <div class="ImageInCard" style="height:${t*i/a}px">
-                    <a data-fancybox="gallery" href="${e}${m}"
-                          data-caption="${n}" title="${n}">
-                            <img  class="lazyload" data-src="${e}${m}"
+var imgDataPath = "/photos/galleryList.json"; //图片名称高宽信息json文件路径
+var imgPath = '/photos/images/';  //图片访问路径
+// var imgPath = "https://cdn.jsdelivr.net/gh/Cenergy/images/gallery/"; //图片访问路径
+var imgMaxNum = 50; //图片显示数量
+
+var windowWidth =
+  window.innerWidth ||
+  document.documentElement.clientWidth ||
+  document.body.clientWidth;
+if (windowWidth < 768) {
+  var imageWidth = 145; //图片显示宽度(手机端)
+} else {
+  var imageWidth = 250; //图片显示宽度
+}
+
+const photo = {
+  page: 1,
+  offset: imgMaxNum,
+  init: function () {
+    var that = this;
+    $.getJSON(imgDataPath, function (data) {
+      that.render(that.page, data);
+      //that.scroll(data);
+      that.eventListen(data);
+    });
+  },
+  constructHtml(options) {
+    const {
+      imageWidth,
+      imageX,
+      imageY,
+      name,
+      imgPath,
+      imgName,
+      imgNameWithPattern,
+    } = options;
+    const htmlEle = `<div class="card lozad" style="width:${imageWidth}px">
+                  <div class="ImageInCard" style="height:${
+                    (imageWidth * imageY) / imageX
+                  }px">
+                    <a data-fancybox="gallery" href="${imgPath}${imgNameWithPattern}"
+                          data-caption="${imgName}" title="${imgName}">
+                            <img  class="lazyload" data-src="${imgPath}${imgNameWithPattern}"
                             src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
                             onload="lzld(this)"
                             lazyload="auto">
                     </a>
                   </div>
-                  <p>${n}</p>
-                </div>`},render:function(t,a=[]){if(!(this.data=a).length)return;var i,e,n,m,o="";let d="";var l="",[a={}]=(a.forEach((t,a)=>{a=0===a?"active":"";d+=`<li class="nav-item" role="presentation">
-          <a class="nav-link ${a} photo-tab" id="home-tab" photo-uuid="${t.name}" data-toggle="tab" href="#${t.name}"  role="tab" aria-controls="${t.name}" aria-selected="true">${t.name}</a>
-        </li>`}),a);const{children:s=[],name:r}=a;s.forEach((t,a)=>{i=t.slice(t.indexOf(" ")+1),e=i.split("/").pop(),m=t.split(" ")[0],n=m.split(".")[0],m=m.split(".")[1];t={imageWidth:imageWidth,imageX:n,imageY:m,name:r,imgName:e,imgPath:imgPath,imgNameWithPattern:i};o+=this.constructHtml(t)}),l+=` <div class="tab-pane fade show active"  role="tabpanel" aria-labelledby="home-tab">${o}</div>`;a=`<ul class="nav nav-tabs" id="myTab" role="tablist">${d}</ul>`,l=`<div class="tab-content" id="myTabContent">${l}</div>`;$("#imageTab").append(a),$(".ImageGrid").append(l),this.minigrid()},eventListen:function(m){let o=this;var d,l,s,r;$('a[data-toggle="tab"]').on("shown.bs.tab",function(t){$(".ImageGrid").empty();const a=$(t.target).attr("photo-uuid");const{children:i,name:e}=m.find(t=>t.name===a)||{};let n="";i.forEach((t,a)=>{d=t.split(" ")[1],l=d.split("/").pop(),r=t.split(" ")[0],s=r.split(".")[0],r=r.split(".")[1];t={imageWidth:imageWidth,imageX:s,imageY:r,name:e,imgName:l,imgPath:imgPath,imgNameWithPattern:d};n+=o.constructHtml(t)}),$(".ImageGrid").append(n),o.minigrid()})},minigrid:function(){var t=new Minigrid({container:".ImageGrid",item:".card",gutter:12});t.mount(),$(window).resize(function(){t.mount()})}};photo.init();
+                  <p>${imgName}</p>
+                </div>`;
+                // 如果不希望显示图片名称的话删去<p>${imgName}</p>这一行即可。
+    return htmlEle;
+  },
+  render: function (page, data = []) {
+    this.data = data;
+    if (!data.length) return;
+    var html,
+      imgNameWithPattern,
+      imgName,
+      imageSize,
+      imageX,
+      imageY,
+      li = "";
+
+    let liHtml = "";
+    let contentHtml = "";
+
+    data.forEach((item, index) => {
+      const activeClass = index === 0 ? "active" : "";
+      liHtml += `<li class="nav-item" role="presentation">
+          <a class="nav-link ${activeClass} photo-tab" id="home-tab" photo-uuid="${item.name}" data-toggle="tab" href="#${item.name}"  role="tab" aria-controls="${item.name}" aria-selected="true">${item.name}</a>
+        </li>`;
+    });
+    const [initData = {}] = data;
+    const { children = [],name } = initData;
+    children.forEach((item, index) => {
+      imgNameWithPattern = item.slice(item.indexOf(" ")+1);
+      imgName = imgNameWithPattern.split("/").pop();
+      imageSize = item.split(" ")[0];
+      imageX = imageSize.split(".")[0];
+      imageY = imageSize.split(".")[1];
+      let imgOptions = {
+        imageWidth,
+        imageX,
+        imageY,
+        name,
+        imgName,
+        imgPath,
+        imgNameWithPattern,
+      };
+      li += this.constructHtml(imgOptions);
+    });
+    contentHtml += ` <div class="tab-pane fade show active"  role="tabpanel" aria-labelledby="home-tab">${li}</div>`;
+
+    const ulHtml = `<ul class="nav nav-tabs" id="myTab" role="tablist">${liHtml}</ul>`;
+    const tabContent = `<div class="tab-content" id="myTabContent">${contentHtml}</div>`;
+
+    $("#imageTab").append(ulHtml);
+    $(".ImageGrid").append(tabContent);
+    this.minigrid();
+  },
+  eventListen: function (data) {
+    let self = this;
+    var html,
+      imgNameWithPattern,
+      imgName,
+      imageSize,
+      imageX,
+      imageY,
+      li = "";
+    $('a[data-toggle="tab"]').on("shown.bs.tab", function (e) {
+      $(".ImageGrid").empty();
+      const selectId = $(e.target).attr("photo-uuid");
+      const selectedData = data.find((data) => data.name === selectId) || {};
+      const { children,name } = selectedData;
+      let li = "";
+      children.forEach((item, index) => {
+        imgNameWithPattern = item.split(" ")[1];
+        imgName = imgNameWithPattern.split("/").pop();
+        imageSize = item.split(" ")[0];
+        imageX = imageSize.split(".")[0];
+        imageY = imageSize.split(".")[1];
+        let imgOptions = {
+          imageWidth,
+          imageX,
+          imageY,
+          name,
+          imgName,
+          imgPath,
+          imgNameWithPattern,
+        };
+        li += self.constructHtml(imgOptions);
+      });
+      $(".ImageGrid").append(li);
+      self.minigrid();
+    });
+  },
+  minigrid: function () {
+    var grid = new Minigrid({
+      container: ".ImageGrid",
+      item: ".card",
+      gutter: 12,
+    });
+    grid.mount();
+    $(window).resize(function () {
+      grid.mount();
+    });
+  },
+};
+photo.init();
